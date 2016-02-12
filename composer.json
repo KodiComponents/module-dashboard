@@ -1,0 +1,25 @@
+{
+    "name":        "kodicms/dashboard",
+    "type":        "kodicms-module",
+    "description": "The official KodiCMS Sashboard module",
+    "homepage":    "http://www.kodicms.ru/",
+    "license":     "MIT",
+    "keywords":    ["laravel", "framework", "kodicms", "cms", "module", "dashboard"],
+    "authors": [
+        {
+            "name":     "Pavel Buchnev",
+            "email":    "butschster@gmail.com",
+            "homepage": "http://www.kodicms.ru/",
+            "role":     "developer"
+        }
+    ],
+    "support": {
+        "issues":   "https://github.com/KodiComponents/module-dashboard/issues",
+        "forum":    "http://www.kodicms.ru/forum",
+        "source":   "https://github.com/KodiComponents/module-dashboard"
+    },
+    "require": {
+        "kodicms/core": "dev-master",
+        "kodicms/widgets": "*"
+    }
+}
