@@ -4,7 +4,7 @@ namespace KodiCMS\Dashboard\Widget;
 
 use Profiler as ProfilerHelper;
 
-class Profiler extends Decorator
+class Profiler extends WidgetDashboardAbstract
 {
     /**
      * @var string

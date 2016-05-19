@@ -2,7 +2,7 @@
 
 namespace KodiCMS\Dashboard\Widget;
 
-class Cache extends Decorator
+class Cache extends WidgetDashboardAbstract
 {
     /**
      * @var string

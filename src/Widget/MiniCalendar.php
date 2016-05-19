@@ -2,7 +2,7 @@
 
 namespace KodiCMS\Dashboard\Widget;
 
-class MiniCalendar extends Decorator
+class MiniCalendar extends WidgetDashboardAbstract
 {
     /**
      * @var array

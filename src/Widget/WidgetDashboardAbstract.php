@@ -7,9 +7,9 @@ use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard;
 use KodiCMS\Widgets\Contracts\WidgetRenderable;
 use KodiCMS\Widgets\Traits\WidgetRender;
-use KodiCMS\Widgets\Widget\Decorator as WidgetDecorator;
+use KodiCMS\Widgets\Widget\WidgetAbstract as WidgetAbstract;
 
-abstract class Decorator extends WidgetDecorator implements WidgetDashboard, WidgetRenderable
+abstract class WidgetDashboardAbstract extends WidgetAbstract implements WidgetDashboard, WidgetRenderable
 {
     use WidgetRender;
 

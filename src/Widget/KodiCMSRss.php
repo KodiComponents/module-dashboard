@@ -4,7 +4,7 @@ namespace KodiCMS\Dashboard\Widget;
 
 use Cache as CacheFacade;
 
-class KodiCMSRss extends Decorator
+class KodiCMSRss extends WidgetDashboardAbstract
 {
     /**
      * @var array
