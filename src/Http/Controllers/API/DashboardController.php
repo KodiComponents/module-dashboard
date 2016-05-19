@@ -3,7 +3,7 @@
 namespace KodiCMS\Dashboard\Http\Controllers\API;
 
 use PackageManager;
-use KodiCMS\Dashboard\Dashboard;
+use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard;
 use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 use KodiCMS\Dashboard\WidgetRenderDashboardHTML;
 use KodiCMS\API\Http\Controllers\System\Controller;
@@ -21,14 +21,20 @@ class DashboardController extends Controller
         'deleteWidget'      => 'backend.dashboard.manage',
     ];
 
-    public function putWidget()
+    /**
+     * @param WidgetManagerDashboard $widgetManager
+     *
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    public function putWidget(WidgetManagerDashboard $widgetManager)
     {
         $widgetType = $this->getRequiredParameter('widget_type');
 
-        $widget = Dashboard::addWidget($widgetType);
+        $widget = $widgetManager->addWidget($widgetType);
 
-        if (count($widget->media_packages) > 0) {
-            $this->media = PackageManager::getScripts($widget->media_packages);
+        if (count($widget->getMediaPackages()) > 0) {
+            $this->media = PackageManager::getScripts($widget->getMediaPackages());
         }
 
         $this->size = $widget->getSize();
@@ -39,10 +45,16 @@ class DashboardController extends Controller
         ])->render());
     }
 
-    public function getWidgetSettings()
+    /**
+     * @param WidgetManagerDashboard $widgetManager
+     *
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    public function getWidgetSettings(WidgetManagerDashboard $widgetManager)
     {
         $widgetId = $this->getRequiredParameter('id');
-        $widget = Dashboard::getWidgetById($widgetId);
+        $widget = $widgetManager->getWidgetById($widgetId);
 
         $settingsView = (new WidgetRenderSettingsHTML($widget))->render();
         $this->setContent(
@@ -50,22 +62,32 @@ class DashboardController extends Controller
         );
     }
 
-    public function deleteWidget()
+    /**
+     * @param WidgetManagerDashboard $widgetManager
+     */
+    public function deleteWidget(WidgetManagerDashboard $widgetManager)
     {
         $widgetId = $this->getRequiredParameter('id');
-        Dashboard::deleteWidgetById($widgetId);
+        $widgetManager->deleteWidgetById($widgetId);
     }
 
-    public function postWidget()
+    /**
+     * @param WidgetManagerDashboard $widgetManager
+     *
+     * @throws \Exception
+     * @throws \Throwable
+     */
+    public function postWidget(WidgetManagerDashboard $widgetManager)
     {
         $widgetId = $this->getRequiredParameter('id');
         $settings = $this->getParameter('settings', []);
 
-        $widget = Dashboard::updateWidget($widgetId, $settings);
+        $widget = $widgetManager->updateWidget($widgetId, $settings);
 
         if ($widget instanceof WidgetDashboard) {
             $this->updateSettingsPage = $widget->isUpdateSettingsPage();
             $this->widgetId = $widgetId;
+
             $this->setContent(view('dashboard::partials.temp_block', [
                 'widget' => new WidgetRenderDashboardHTML($widget),
             ])->render());

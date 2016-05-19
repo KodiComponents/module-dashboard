@@ -2,19 +2,24 @@
 
 namespace KodiCMS\Dashboard;
 
+use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard as WidgetManagerDashboardInterface;
 use KodiCMS\Users\Model\UserMeta;
+use KodiCMS\Widgets\Contracts\Widget;
 use KodiCMS\Widgets\Manager\WidgetManager;
 use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 
-class WidgetManagerDashboard extends WidgetManager
+class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashboardInterface
 {
+    const WIDGET_BLOCKS_KEY = 'dashboard';
+    const WIDGET_SETTINGS_KEY = 'dashboard_widget_settings';
+
     /**
      * @return string
      */
-    public static function getWidgets()
+    public function getWidgets()
     {
-        $widgetsPosition = UserMeta::get(Dashboard::WIDGET_BLOCKS_KEY, []);
-        $widgetSettings = UserMeta::get(Dashboard::WIDGET_SETTINGS_KEY, []);
+        $widgetsPosition = UserMeta::get(static::WIDGET_BLOCKS_KEY, []);
+        $widgetSettings = UserMeta::get(static::WIDGET_SETTINGS_KEY, []);
 
         foreach ($widgetsPosition as $i => $data) {
             if (! isset($data['widget_id'])) {
@@ -43,7 +48,33 @@ class WidgetManagerDashboard extends WidgetManager
     /**
      * @return array
      */
-    public static function getAvailableTypes()
+    public function getAvailableWidgets()
+    {
+        $widgetSettings = $this->getSettings();
+        $types = $this->getAvailableTypes();
+
+        $placedWidgetsTypes = [];
+        foreach ($widgetSettings as $widget) {
+            $widget = $this->toWidget($widget);
+
+            if ($widget instanceof WidgetDashboard) {
+                $placedWidgetsTypes[$widget->getType()] = $widget->isMultiple();
+            }
+        }
+
+        foreach ($types as $type => $data) {
+            if (array_get($placedWidgetsTypes, $type) === false) {
+                unset($types[$type]);
+            }
+        }
+
+        return $types;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAvailableTypes()
     {
         $types = [];
         foreach (config('dashboard', []) as $type => $widget) {
@@ -62,7 +93,7 @@ class WidgetManagerDashboard extends WidgetManager
      *
      * @return string|null
      */
-    public static function getClassNameByType($needleType)
+    public function getClassNameByType($needleType)
     {
         foreach (config('dashboard', []) as $type => $widget) {
             if (! isset($widget['class']) or static::isCorrupt($widget['class'])) {
@@ -82,7 +113,7 @@ class WidgetManagerDashboard extends WidgetManager
      *
      * @return string|null
      */
-    public static function getTypeByClassName($needleClass)
+    public function getTypeByClassName($needleClass)
     {
         foreach (config('dashboard', []) as $type => $widget) {
             if (! isset($widget['class']) or static::isCorrupt($widget['class'])) {
@@ -101,9 +132,9 @@ class WidgetManagerDashboard extends WidgetManager
      *
      * @return \KodiCMS\Widgets\Contracts\Widget|null
      */
-    public static function toWidget(array $data)
+    public function toWidget(array $data)
     {
-        /*
+        /**
          * @var string $type
          * @var string $id
          * @var array  $settings
@@ -116,6 +147,186 @@ class WidgetManagerDashboard extends WidgetManager
 
         if (is_array($parameters)) {
             $widget->setParameters($parameters);
+        }
+
+        return $widget;
+    }
+
+    /**
+     * @param int $pageId
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getWidgetsByPage($pageId)
+    {
+
+    }
+
+    /**
+     * @param int $pageId
+     *
+     * @return array
+     */
+    public function getPageWidgetBlocks($pageId)
+    {
+
+    }
+
+    /**
+     * @param string   $widgetId
+     * @param int|null $userId
+     *
+     * @return WidgetDashboard|null
+     */
+    public function getWidgetById($widgetId, $userId = null)
+    {
+        $widget = array_get(static::getSettings($userId), $widgetId);
+
+        if (is_null($widget = $this->toWidget($widget)) or ! ($widget instanceof WidgetDashboard)) {
+            return;
+        }
+
+        return $widget;
+    }
+
+    /**
+     * @param            $type
+     * @param array|null $settings
+     * @param null|int   $userId
+     *
+     * @return WidgetDashboard|null
+     */
+    public function addWidget($type, array $settings = null, $userId = null)
+    {
+        $widgetSettings = $this->getSettings($userId);
+
+        $widget = $this->makeWidget($type, $type, null, $settings);
+
+        if (is_null($widget)) {
+            return false;
+        }
+
+        $widget->setId(uniqid());
+
+        $widgetSettings[$widget->getId()] = $widget->toArray();
+
+        $this->saveSettings($widgetSettings, $userId);
+
+        return $widget;
+    }
+
+    /**
+     * @param string   $widgetId
+     * @param array    $settings
+     * @param null|int $userId
+     *
+     * @return WidgetDashboard|null
+     */
+    public function updateWidget($widgetId, array $settings, $userId = null)
+    {
+        $widgetSettings = $this->getSettings($userId);
+        $widget = array_get($widgetSettings, $widgetId);
+
+        if (is_array($widget) and is_null($widget = $this->toWidget($widget))) {
+            return;
+        }
+
+        $widget->setSettings($settings);
+
+        $widgetSettings[$widgetId] = $widget->toArray();
+        $this->saveSettings($widgetSettings, $userId);
+
+        return $widget;
+    }
+
+    /**
+     * @param string   $widgetId
+     * @param null|int $userId
+     *
+     * @return bool
+     */
+    public function deleteWidgetById($widgetId, $userId = null)
+    {
+        $widgetSettings = $this->getSettings($userId);
+
+        unset($widgetSettings[$widgetId]);
+
+        $this->saveSettings($widgetSettings, $userId);
+
+        return true;
+    }
+
+    /**
+     * @param string   $widgetId
+     * @param string   $column
+     * @param null|int $userId
+     *
+     * @return bool
+     */
+    public function moveWidget($widgetId, $column, $userId = null)
+    {
+        $widgetSettings = $this->getSettings($userId);
+        $found = false;
+
+        foreach ($widgetSettings as $data) {
+            foreach ($ids as $i => $id) {
+                if ($id = $widgetId and $column != $column) {
+                    $found = true;
+                    unset($blocks[$column][$i]);
+                    break;
+                }
+            }
+        }
+
+        if ($found === true) {
+            $blocks[$column][] = $widgetId;
+            UserMeta::set(self::WIDGET_BLOCKS_KEY, $blocks, $userId);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param null|int $userId
+     *
+     * @return array
+     */
+    protected function getSettings($userId = null)
+    {
+        return UserMeta::get(self::WIDGET_SETTINGS_KEY, [], $userId);
+    }
+
+    /**
+     * @param array    $settings
+     * @param null|int $userId
+     */
+    protected function saveSettings(array $settings, $userId = null)
+    {
+        UserMeta::set(self::WIDGET_SETTINGS_KEY, $settings, $userId);
+    }
+
+    /**
+     * @param string      $type
+     * @param string      $name
+     * @param string|null $description
+     * @param array|null  $settings
+     *
+     * @return Widget|null
+     */
+    public function makeWidget($type, $name, $description = null, array $settings = null)
+    {
+        $class = $this->getClassNameByType($type);
+
+        if (! $this->isWidgetable($class)) {
+            return;
+        }
+
+        $widget = app($class);
+
+        if (! is_null($settings)) {
+            $widget->setSettings($settings);
         }
 
         return $widget;

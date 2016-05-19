@@ -27,10 +27,11 @@
 			@foreach ($widgets as $data)
 			<li
 				@foreach ($data as $key => $v)
-				<?php if($key == 'widget') continue; ?>
-					data-{{ $key }}="{{ $v }}" @endforeach
+					@continue($key == 'widget')
+					data-{{ $key }}="{{ $v }}"
+				@endforeach
 			>
-				<?php echo (new \KodiCMS\Dashboard\WidgetRenderDashboardHTML($data['widget']))->render(); ?>
+				{!! (new \KodiCMS\Dashboard\WidgetRenderDashboardHTML($data['widget']))->render() !!}
 			</li>
 			@endforeach
 		</ul>

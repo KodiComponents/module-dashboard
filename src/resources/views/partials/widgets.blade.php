@@ -1,6 +1,6 @@
-@if (count($types) > 0)
+@if (count($widgets) > 0)
 <div class="row">
-	@foreach ($types as $type => $data)
+	@foreach ($widgets as $type => $data)
 		<div class="col-sm-6">
 			<div class="panel">
 				<div class="panel-body padding-sm">
