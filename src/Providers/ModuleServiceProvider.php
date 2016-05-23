@@ -18,6 +18,8 @@ class ModuleServiceProvider extends ServiceProvider
         Permission::register('dashboard', 'dashboard', [
             'manage',
         ]);
+
+        $this->registerNavigation();
     }
 
     /**
@@ -27,5 +29,18 @@ class ModuleServiceProvider extends ServiceProvider
      */
     public function register()
     {
+    }
+
+    protected function registerNavigation()
+    {
+        \Navigation::setFromArray([
+            [
+                'id'     => 'dashboard',
+                'title'    => 'dashboard::core.title.dashboard',
+                'icon'     => 'dashboard',
+                'url'      => route('backend.dashboard'),
+                'priority' => -1000,
+            ],
+        ]);
     }
 }
