@@ -1,7 +1,11 @@
 <?php
 
 return [
-    'title'                    => 'Рабочий стол',
-    'backend.dashboard'        => 'Доступ',
-    'backend.dashboard.manage' => 'Настройка виджетов',
+    'title' => [
+        'module' => 'Рабочий стол',
+        'dashboard' => '',
+    ],
+    'dashboard' => [
+        'manage' => 'Настройка виджетов',
+    ],
 ];

@@ -5,6 +5,7 @@ namespace KodiCMS\Dashboard\Providers;
 use KodiCMS\Dashboard\WidgetManagerDashboard;
 use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard as WidgetManagerDashboardInterface;
 use KodiCMS\Support\ServiceProvider;
+use KodiCMS\Users\Model\Permission;
 
 class ModuleServiceProvider extends ServiceProvider
 {
@@ -13,6 +14,10 @@ class ModuleServiceProvider extends ServiceProvider
         $this->app->singleton(WidgetManagerDashboardInterface::class, function () {
             return new WidgetManagerDashboard();
         });
+
+        Permission::register('dashboard', 'dashboard', [
+            'manage',
+        ]);
     }
 
     /**
