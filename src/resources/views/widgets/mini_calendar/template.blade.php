@@ -7,7 +7,7 @@
 	</div>
 </div>
 
-@section('scripts')
+@push('scripts')
 <script type="text/javascript">
 $(function(){
 	var update_dashboard_calendar = function () {
@@ -17,4 +17,4 @@ $(function(){
 	update_dashboard_calendar();
 });
 </script>
-@stop
+@endpush

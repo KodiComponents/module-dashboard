@@ -1,3 +1,3 @@
 {!! $widget->render() !!}
 
-@yield('scripts')
+@stack('scripts')
