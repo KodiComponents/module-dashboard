@@ -14,12 +14,6 @@ class ModuleServiceProvider extends ServiceProvider
         $this->app->singleton(WidgetManagerDashboardInterface::class, function () {
             return new WidgetManagerDashboard();
         });
-
-        Permission::register('dashboard', 'dashboard', [
-            'manage',
-        ]);
-
-        $this->registerNavigation();
     }
 
     /**
@@ -29,9 +23,12 @@ class ModuleServiceProvider extends ServiceProvider
      */
     public function register()
     {
+		Permission::register('dashboard', 'dashboard', [
+            'manage',
+        ]);
     }
 
-    protected function registerNavigation()
+    public function contextBackend()
     {
         \Navigation::setFromArray([
             [
