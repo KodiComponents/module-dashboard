@@ -22,12 +22,12 @@ class DashboardTableSeeder extends Seeder
                 [
                     'user_id' => $user->id,
                     'key' => WidgetManagerDashboard::WIDGET_SETTINGS_KEY,
-                    'value' => '{"555608fdd8cd4":{"id":"555608fdd8cd4","type":"mini_calendar","settings":[],"parameters":[]},"55560bdf5e7bc":{"id":"55560bdf5e7bc","type":"cache_button","settings":[],"parameters":[]},"5577076067b03":{"id":"5577076067b03","type":"kodicms_rss","settings":[],"parameters":[]},"55a6661472f0d":{"id":"55a6661472f0d","type":"profiler","settings":[],"parameters":[]}}',
+                    'value' => '{"5756f21098fd0":{"id":"5756f21098fd0","type":"profiler","settings":[],"parameters":[],"size":{"x":5,"y":2,"max_size":[6,2],"min_size":[3,2]},"multiple":false,"packages":[],"updateSettingsPage":false},"5756f21263692":{"id":"5756f21263692","type":"kodicms_rss","settings":[],"parameters":[],"size":{"x":5,"y":2,"max_size":[5,10],"min_size":[3,2]},"multiple":false,"packages":[],"updateSettingsPage":false},"5756f218acc7f":{"id":"5756f218acc7f","type":"mini_calendar","settings":[],"parameters":[],"size":{"x":3,"y":1,"max_size":[5,1],"min_size":[3,1]},"multiple":false,"packages":[],"updateSettingsPage":false},"5756f21be3040":{"id":"5756f21be3040","type":"cache_button","settings":[],"parameters":[],"size":{"x":2,"y":1,"max_size":[2,1],"min_size":[2,1]},"multiple":false,"packages":[],"updateSettingsPage":false}}',
                 ],
                 [
                     'user_id' => $user->id,
                     'key' => WidgetManagerDashboard::WIDGET_BLOCKS_KEY,
-                    'value' => '[{"col":3,"row":1,"sizex":3,"sizey":1,"max-sizex":5,"max-sizey":1,"min-sizex":3,"min-sizey":1,"widget_id":"555608fdd8cd4"},{"col":1,"row":1,"sizex":2,"sizey":1,"max-sizex":2,"max-sizey":1,"min-sizex":2,"min-sizey":1,"widget_id":"55560bdf5e7bc"},{"col":1,"row":2,"sizex":5,"sizey":3,"max-sizex":5,"max-sizey":10,"min-sizex":3,"min-sizey":2,"widget_id":"5577076067b03"},{"col":1,"row":5,"sizex":5,"sizey":2,"max-sizex":6,"max-sizey":2,"min-sizex":3,"min-sizey":2,"widget_id":"55a6661472f0d"}]',
+                    'value' => '[{"col":1,"row":2,"x":5,"y":2,"max-size":[6,2],"min-size":[3,2],"id":"5756f21098fd0"},{"col":1,"row":4,"x":5,"y":2,"max-size":[5,10],"min-size":[3,2],"id":"5756f21263692"},{"col":1,"row":1,"x":3,"y":1,"max-size":[5,1],"min-size":[3,1],"id":"5756f218acc7f"},{"col":4,"row":1,"x":2,"y":1,"max-size":[2,1],"min-size":[2,1],"id":"5756f21be3040"}]',
                 ],
             ]);
         }
