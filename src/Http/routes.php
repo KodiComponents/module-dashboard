@@ -5,7 +5,8 @@ Route::group(['prefix' => backend_url_segment(), 'as' => 'backend.', 'middleware
 });
 
 Route::group(['as' => 'api.dashboard.widget.', 'middleware' => ['backend']], function () {
-    RouteAPI::get('dashboard.widget.list', ['as' => 'list', 'uses' => 'DashboardController@getWidgetList']);
+    RouteAPI::get('dashboard.widget.available', ['as' => 'available', 'uses' => 'API\DashboardController@getAvailableWidgets']);
+    RouteAPI::get('dashboard.widget.list', ['as' => 'list', 'uses' => 'API\DashboardController@getWidgetList']);
     RouteAPI::get('dashboard.widget', ['as' => 'settings', 'uses' => 'API\DashboardController@getWidgetSettings']);
     RouteAPI::put('dashboard.widget', ['as' => 'put', 'uses' => 'API\DashboardController@putWidget']);
     RouteAPI::post('dashboard.widget', ['as' => 'post', 'uses' => 'API\DashboardController@postWidget']);

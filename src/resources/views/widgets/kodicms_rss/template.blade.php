@@ -14,8 +14,9 @@
 		@endforeach
 	</ul>
 </div>
+
 <script type="text/javascript">
-$(function(){
-	Scroll.addToWidget('.rss-feed-widget[data-id="{{ $widget->getId() }}"]', '.list-group', ['.panel-heading']);
-})
+$('[data-id="{{ $widget->getId() }}"]').on('widget_init', function () {
+	Scroll.addToWidget(this, '.list-group', ['.panel-heading']);
+});
 </script>

@@ -21,13 +21,14 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
         $widgetsPosition = UserMeta::get(static::WIDGET_BLOCKS_KEY, []);
         $widgetSettings = UserMeta::get(static::WIDGET_SETTINGS_KEY, []);
 
+        $widgets = [];
         foreach ($widgetsPosition as $i => $data) {
-            if (! isset($data['widget_id'])) {
+            if (! isset($data['id'])) {
                 unset($widgetsPosition[$i]);
                 continue;
             }
 
-            $widget = array_get($widgetSettings, $data['widget_id']);
+            $widget = array_get($widgetSettings, $data['id']);
 
             if (is_array($widget) and is_null($widget = static::toWidget($widget))) {
                 unset($widgetsPosition[$i]);
@@ -39,10 +40,15 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
                 continue;
             }
 
-            $widgetsPosition[$i]['widget'] = $widget;
+            $widgets[$i] = [
+                'data' => array_except($widgetsPosition[$i], 'id'),
+                'id' => $data['id'],
+                'widget' => $widget->toArray(),
+                'template' => (string) (new \KodiCMS\Dashboard\WidgetRenderDashboardHTML($widget))->render()
+            ];
         }
 
-        return $widgetsPosition;
+        return $widgets;
     }
 
     /**

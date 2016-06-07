@@ -37,8 +37,8 @@ abstract class WidgetDashboardAbstract extends WidgetAbstract implements WidgetD
      * @var array
      */
     protected $size = [
-        'x'        => 2,
-        'y'        => 1,
+        'x' => 2,
+        'y' => 1,
         'max_size' => [2, 1],
         'min_size' => [2, 1],
     ];
@@ -105,6 +105,11 @@ abstract class WidgetDashboardAbstract extends WidgetAbstract implements WidgetD
      */
     public function toArray()
     {
-        return array_except(parent::toArray(), ['name', 'description']);
+        return array_except(parent::toArray(), ['name', 'description']) + [
+            'size' => $this->getSize(),
+            'multiple' => $this->isMultiple(),
+            'packages' => $this->getMediaPackages(),
+            'updateSettingsPage' => $this->isUpdateSettingsPage()
+        ];
     }
 }

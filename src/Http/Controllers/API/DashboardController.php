@@ -23,6 +23,25 @@ class DashboardController extends Controller
 
     /**
      * @param WidgetManagerDashboard $widgetManager
+     */
+    public function getAvailableWidgets(WidgetManagerDashboard $widgetManager)
+    {
+        $widgets = $widgetManager->getAvailableWidgets();
+        $this->setContent($widgets);
+    }
+
+    /**
+     * @param WidgetManagerDashboard $widgetManager
+     */
+    public function getWidgetList(WidgetManagerDashboard $widgetManager)
+    {
+        $this->setContent(
+            $widgetManager->getWidgets()
+        );
+    }
+
+    /**
+     * @param WidgetManagerDashboard $widgetManager
      *
      * @throws \Exception
      * @throws \Throwable
@@ -33,16 +52,10 @@ class DashboardController extends Controller
 
         $widget = $widgetManager->addWidget($widgetType);
 
-        if (count($widget->getMediaPackages()) > 0) {
-            $this->media = PackageManager::getScripts($widget->getMediaPackages());
-        }
-
-        $this->size = $widget->getSize();
-        $this->id = $widget->getId();
-
-        $this->setContent(view('dashboard::partials.temp_block', [
-            'widget' => new WidgetRenderDashboardHTML($widget),
-        ])->render());
+        $this->setContent([
+            'widget' => $widget->toArray(),
+            'template' => (string) (new WidgetRenderDashboardHTML($widget))->render()
+        ]);
     }
 
     /**
@@ -56,10 +69,10 @@ class DashboardController extends Controller
         $widgetId = $this->getRequiredParameter('id');
         $widget = $widgetManager->getWidgetById($widgetId);
 
-        $settingsView = (new WidgetRenderSettingsHTML($widget))->render();
-        $this->setContent(
-            view('dashboard::partials.settings', compact('widget', 'settingsView'))->render()
-        );
+        $this->setContent([
+            'widget' => $widget->toArray(),
+            'template' => (string) (new WidgetRenderSettingsHTML($widget))->render()
+        ]);
     }
 
     /**
@@ -85,12 +98,10 @@ class DashboardController extends Controller
         $widget = $widgetManager->updateWidget($widgetId, $settings);
 
         if ($widget instanceof WidgetDashboard) {
-            $this->updateSettingsPage = $widget->isUpdateSettingsPage();
-            $this->widgetId = $widgetId;
-
-            $this->setContent(view('dashboard::partials.temp_block', [
-                'widget' => new WidgetRenderDashboardHTML($widget),
-            ])->render());
+            $this->setContent([
+                'widget' => $widget->toArray(),
+                'template' => (string) (new WidgetRenderSettingsHTML($widget))->render()
+            ]);
         }
     }
 }

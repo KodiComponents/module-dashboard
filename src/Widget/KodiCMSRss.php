@@ -10,8 +10,8 @@ class KodiCMSRss extends WidgetDashboardAbstract
      * @var array
      */
     protected $size = [
-        'x'        => 5,
-        'y'        => 2,
+        'x' => 5,
+        'y' => 2,
         'max_size' => [5, 10],
         'min_size' => [3, 2],
     ];

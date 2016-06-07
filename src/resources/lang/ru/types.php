@@ -8,7 +8,7 @@ return [
     'mini_calendar' => [
         'title' => 'Текущая дата',
         'label' => [
-            'format' => 'Формат фремени',
+            'format' => 'Формат времени',
         ],
     ],
     'kodicms_rss'   => [

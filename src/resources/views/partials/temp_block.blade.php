@@ -1,3 +1,0 @@
-{!! $widget->render() !!}
-
-@stack('scripts')
