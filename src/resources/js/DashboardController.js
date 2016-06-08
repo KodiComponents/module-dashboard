@@ -49,20 +49,20 @@ var Dashboard = {
             });
         },
         place: function(html, id, size) {
-            var $widget = this.gridster
-                .add_widget
-                .apply(this.gridster, [
-                    $('<li data-id="'+id+'" />').append(html), size.x, size.y, size.col || false, size.row || false, size.max_size || [size.x, size.y], size.min_size || [size.x, size.y]
-                ]);
-
             var max_size = size['max-size'] || [size.x, size.y];
             var min_size = size['min-size'] || [size.x, size.y];
 
+            var $widget = this.gridster
+                .add_widget
+                .apply(this.gridster, [
+                    $('<li data-id="'+id+'" />').append(html), size.x, size.y, size.col || false, size.row || false, max_size, min_size
+                ]);
+
             $widget.attr({
-                'data-max_size_x': max_size[1] || size.x,
-                'data-min_size_x': min_size[0] || size.x,
+                'data-max_size_x': max_size[0] || size.x,
                 'data-max_size_y': max_size[1] || size.y,
-                'data-min_size_y': min_size[0] || size.y
+                'data-min_size_x': min_size[0] || size.x,
+                'data-min_size_y': min_size[1] || size.y
             });
 
             var $cont = $widget.find('.dashboard-widget');

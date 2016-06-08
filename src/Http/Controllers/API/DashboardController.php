@@ -26,7 +26,7 @@ class DashboardController extends Controller
      */
     public function getAvailableWidgets(WidgetManagerDashboard $widgetManager)
     {
-        $widgets = $widgetManager->getAvailableWidgets();
+        $widgets = $widgetManager->getAvailableWidgets()->toArray();
         $this->setContent($widgets);
     }
 

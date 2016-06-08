@@ -2,16 +2,52 @@
 
 namespace KodiCMS\Dashboard;
 
+use Illuminate\Support\Collection;
+use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard as WidgetManagerDashboardInterface;
+use KodiCMS\Dashboard\Contracts\WidgetType;
 use KodiCMS\Users\Model\UserMeta;
 use KodiCMS\Widgets\Contracts\Widget;
 use KodiCMS\Widgets\Manager\WidgetManager;
-use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 
 class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashboardInterface
 {
-    const WIDGET_BLOCKS_KEY = 'dashboard';
+
+    const WIDGET_BLOCKS_KEY   = 'dashboard';
     const WIDGET_SETTINGS_KEY = 'dashboard_widget_settings';
+
+    /**
+     * @var array
+     */
+    protected $types = [];
+
+    /**
+     * WidgetManagerDashboard constructor.
+     *
+     * @param WidgetType[] $types
+     */
+    public function __construct(array $types = [])
+    {
+        $this->types = new Collection();
+
+        foreach ($types as $type) {
+            $this->registerWidget($type);
+        }
+    }
+
+    /**3
+     * @param WidgetType $type
+     *
+     * @return $this
+     */
+    public function registerWidget(WidgetType $type)
+    {
+        if (! $this->isCorrupt($type->getClass())) {
+            $this->types->put($type->getType(), $type);
+        }
+
+        return $this;
+    }
 
     /**
      * @return string
@@ -19,7 +55,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     public function getWidgets()
     {
         $widgetsPosition = UserMeta::get(static::WIDGET_BLOCKS_KEY, []);
-        $widgetSettings = UserMeta::get(static::WIDGET_SETTINGS_KEY, []);
+        $widgetSettings  = UserMeta::get(static::WIDGET_SETTINGS_KEY, []);
 
         $widgets = [];
         foreach ($widgetsPosition as $i => $data) {
@@ -30,11 +66,14 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
 
             $widget = array_get($widgetSettings, $data['id']);
 
-            if (is_array($widget) and is_null($widget = static::toWidget($widget))) {
+            if (is_array($widget) and is_null($widget = $this->toWidget($widget))) {
                 unset($widgetsPosition[$i]);
                 continue;
             }
 
+            $widgetsPosition[$i]['max-size'] = array_get($widget->getSize(), 'max_size');
+            $widgetsPosition[$i]['min-size'] = array_get($widget->getSize(), 'min_size');
+            
             if (! ($widget instanceof WidgetDashboard)) {
                 unset($widgetsPosition[$i]);
                 continue;
@@ -44,7 +83,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
                 'data' => array_except($widgetsPosition[$i], 'id'),
                 'id' => $data['id'],
                 'widget' => $widget->toArray(),
-                'template' => (string) (new \KodiCMS\Dashboard\WidgetRenderDashboardHTML($widget))->render()
+                'template' => (string) (new \KodiCMS\Dashboard\WidgetRenderDashboardHTML($widget))->render(),
             ];
         }
 
@@ -57,7 +96,6 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     public function getAvailableWidgets()
     {
         $widgetSettings = $this->getSettings();
-        $types = $this->getAvailableTypes();
 
         $placedWidgetsTypes = [];
         foreach ($widgetSettings as $widget) {
@@ -68,13 +106,9 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
             }
         }
 
-        foreach ($types as $type => $data) {
-            if (array_get($placedWidgetsTypes, $type) === false) {
-                unset($types[$type]);
-            }
-        }
-
-        return $types;
+        return $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($placedWidgetsTypes) {
+            return array_get($placedWidgetsTypes, $type->getType()) !== false;
+        });
     }
 
     /**
@@ -82,16 +116,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
      */
     public function getAvailableTypes()
     {
-        $types = [];
-        foreach (config('dashboard', []) as $type => $widget) {
-            if (! isset($widget['class']) or static::isCorrupt($widget['class'])) {
-                continue;
-            }
-
-            $types[$type] = $widget;
-        }
-
-        return $types;
+        return $this->types;
     }
 
     /**
@@ -101,17 +126,13 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
      */
     public function getClassNameByType($needleType)
     {
-        foreach (config('dashboard', []) as $type => $widget) {
-            if (! isset($widget['class']) or static::isCorrupt($widget['class'])) {
-                continue;
-            }
+        $type = $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($needleType) {
+            return $type->getType() == $needleType or $this->isCorrupt($type->getClass());
+        })->first();
 
-            if ($type == $needleType) {
-                return $widget['class'];
-            }
+        if ($type) {
+            return $type->getClass();
         }
-
-        return;
     }
 
     /**
@@ -121,16 +142,13 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
      */
     public function getTypeByClassName($needleClass)
     {
-        foreach (config('dashboard', []) as $type => $widget) {
-            if (! isset($widget['class']) or static::isCorrupt($widget['class'])) {
-                continue;
-            }
-            if (strpos($widget['class'], $needleClass) !== false) {
-                return $type;
-            }
-        }
+        $type = $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($needleClass) {
+            return $type->getClass() == $needleClass or $this->isCorrupt($type->getClass());
+        })->first();
 
-        return;
+        if ($type) {
+            return $type->getType();
+        }
     }
 
     /**
@@ -143,12 +161,13 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
         /**
          * @var string $type
          * @var string $id
-         * @var array  $settings
-         * @var array  $parameters
+         * @var array $settings
+         * @var array $parameters
          */
         extract($data);
 
-        $widget = self::makeWidget($type, $type, null, $settings);
+        $widget = $this->makeWidget($type, $type, null, $settings);
+
         $widget->setId($id);
 
         if (is_array($parameters)) {
@@ -179,14 +198,14 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param string   $widgetId
+     * @param string $widgetId
      * @param int|null $userId
      *
      * @return WidgetDashboard|null
      */
     public function getWidgetById($widgetId, $userId = null)
     {
-        $widget = array_get(static::getSettings($userId), $widgetId);
+        $widget = array_get($this->getSettings($userId), $widgetId);
 
         if (is_null($widget = $this->toWidget($widget)) or ! ($widget instanceof WidgetDashboard)) {
             return;
@@ -198,7 +217,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     /**
      * @param            $type
      * @param array|null $settings
-     * @param null|int   $userId
+     * @param null|int $userId
      *
      * @return WidgetDashboard|null
      */
@@ -222,8 +241,8 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param string   $widgetId
-     * @param array    $settings
+     * @param string $widgetId
+     * @param array $settings
      * @param null|int $userId
      *
      * @return WidgetDashboard|null
@@ -231,7 +250,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     public function updateWidget($widgetId, array $settings, $userId = null)
     {
         $widgetSettings = $this->getSettings($userId);
-        $widget = array_get($widgetSettings, $widgetId);
+        $widget         = array_get($widgetSettings, $widgetId);
 
         if (is_array($widget) and is_null($widget = $this->toWidget($widget))) {
             return;
@@ -246,7 +265,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param string   $widgetId
+     * @param string $widgetId
      * @param null|int $userId
      *
      * @return bool
@@ -263,8 +282,8 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param string   $widgetId
-     * @param string   $column
+     * @param string $widgetId
+     * @param string $column
      * @param null|int $userId
      *
      * @return bool
@@ -272,7 +291,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     public function moveWidget($widgetId, $column, $userId = null)
     {
         $widgetSettings = $this->getSettings($userId);
-        $found = false;
+        $found          = false;
 
         foreach ($widgetSettings as $data) {
             foreach ($ids as $i => $id) {
@@ -305,7 +324,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param array    $settings
+     * @param array $settings
      * @param null|int $userId
      */
     protected function saveSettings(array $settings, $userId = null)
@@ -314,10 +333,10 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     }
 
     /**
-     * @param string      $type
-     * @param string      $name
+     * @param string $type
+     * @param string $name
      * @param string|null $description
-     * @param array|null  $settings
+     * @param array|null $settings
      *
      * @return Widget|null
      */
@@ -332,7 +351,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
         $widget = app($class);
 
         if (! is_null($settings)) {
-            $widget->setSettings($settings);
+            $widget->setSettings(array_except($settings, 'max-size', 'min-size'));
         }
 
         return $widget;
