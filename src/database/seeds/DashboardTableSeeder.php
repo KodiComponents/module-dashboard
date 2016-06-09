@@ -17,7 +17,7 @@ class DashboardTableSeeder extends Seeder
      */
     public function run()
     {
-        foreach (User::all() as $user) {
+        foreach (\CMS::user()->all() as $user) {
             DB::table('user_meta')->insert([
                 [
                     'user_id' => $user->id,
