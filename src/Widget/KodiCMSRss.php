@@ -3,6 +3,8 @@
 namespace KodiCMS\Dashboard\Widget;
 
 use Cache as CacheFacade;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class KodiCMSRss extends WidgetDashboardAbstract
 {
@@ -12,7 +14,7 @@ class KodiCMSRss extends WidgetDashboardAbstract
     protected $size = [
         'x' => 5,
         'y' => 2,
-        'max_size' => [5, 10],
+        'max_size' => [6, 10],
         'min_size' => [3, 2],
     ];
 
@@ -30,8 +32,17 @@ class KodiCMSRss extends WidgetDashboardAbstract
             return file_get_contents('https://github.com/KodiCMS/kodicms-laravel/commits/dev.atom');
         });
 
+        $requestComponents = CacheFacade::remember('kodicomponents.rss', 20, function () {
+            return file_get_contents('https://github.com/organizations/KodiComponents/butschster.private.atom?token=AAvNadRRD9ty9srSHedgk1XxgjQVs5rcks61ZV-YwA==');
+        });
+
+        $feed = $this->parseRss($request);
+        $feed = $feed->merge($this->parseRss($requestComponents));
+
         return [
-            'feed' => $this->parseRss($request),
+            'feed' => $feed->sortByDesc(function ($item) {
+                return Carbon::parse($item['updated']);
+            }),
         ];
     }
 
@@ -51,7 +62,7 @@ class KodiCMSRss extends WidgetDashboardAbstract
 
         // Feed could not be loaded
         if ($feed === false) {
-            return [];
+            return new Collection();
         }
 
         $namespaces = $feed->getNamespaces(true);
@@ -60,7 +71,7 @@ class KodiCMSRss extends WidgetDashboardAbstract
         $feed = isset($feed->channel) ? $feed->xpath('//item') : $feed->entry;
 
         $i = 0;
-        $items = [];
+        $items = new Collection();
 
         foreach ($feed as $item) {
             if ($limit > 0 and $i++ === $limit) {
@@ -73,7 +84,7 @@ class KodiCMSRss extends WidgetDashboardAbstract
                 $item_fields += (array) $item->children($ns);
             }
 
-            $items[] = $item_fields;
+            $items->push($item_fields);
         }
 
         return $items;

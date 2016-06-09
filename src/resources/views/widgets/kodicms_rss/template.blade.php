@@ -8,9 +8,19 @@
 
 	<ul class="list-group">
 		@foreach ($feed as $item)
-		<a class="list-group-item" href="{{ $item['link']['href'] }}" target="_blank">
-			{{ $item['title'] }} <small class="text-muted">{{ Date::format($item['updated']) }}</small>
-		</a>
+			<li class="list-group-item">
+				<a class="list-group-item-heading" href="{{ $item['link']['href'] }}" target="_blank">
+					{{ $item['title'] }}
+				</a>
+				<br />
+				<small class="text-muted">{{ Date::format($item['updated']) }}</small>
+
+				@if(!empty($item['content']))
+				<div class="list-group-item-text" style="font-size: 80%">
+					{!! strip_tags($item['content'], 'a,p,div,br,ul,li') !!}
+				</div>
+				@endif
+			</li>
 		@endforeach
 	</ul>
 </div>
