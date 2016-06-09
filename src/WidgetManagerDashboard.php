@@ -2,7 +2,6 @@
 
 namespace KodiCMS\Dashboard;
 
-use Illuminate\Support\Collection;
 use KodiCMS\Dashboard\Contracts\WidgetDashboard;
 use KodiCMS\Dashboard\Contracts\WidgetManagerDashboard as WidgetManagerDashboardInterface;
 use KodiCMS\Dashboard\Contracts\WidgetType;
@@ -17,36 +16,18 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     const WIDGET_SETTINGS_KEY = 'dashboard_widget_settings';
 
     /**
-     * @var array
-     */
-    protected $types = [];
-
-    /**
-     * WidgetManagerDashboard constructor.
-     *
-     * @param WidgetType[] $types
-     */
-    public function __construct(array $types = [])
-    {
-        $this->types = new Collection();
-
-        foreach ($types as $type) {
-            $this->registerWidget($type);
-        }
-    }
-
-    /**3
-     * @param WidgetType $type
+     * @param \KodiCMS\Widgets\Contracts\WidgetType $type
      *
      * @return $this
+     * @throws \Exception
      */
-    public function registerWidget(WidgetType $type)
+    public function registerWidget(\KodiCMS\Widgets\Contracts\WidgetType $type)
     {
-        if (! $this->isCorrupt($type->getClass())) {
-            $this->types->put($type->getType(), $type);
+        if (! ($type instanceof WidgetType)) {
+            throw new \Exception('Widget type must be instance of [KodiCMS\Dashboard\Contracts\WidgetType]');
         }
 
-        return $this;
+        return parent::registerWidget($type);
     }
 
     /**
@@ -106,7 +87,7 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
             }
         }
 
-        return $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($placedWidgetsTypes) {
+        return $this->types->filter(function (WidgetType $type) use ($placedWidgetsTypes) {
             return array_get($placedWidgetsTypes, $type->getType()) !== false;
         });
     }
@@ -117,38 +98,6 @@ class WidgetManagerDashboard extends WidgetManager implements WidgetManagerDashb
     public function getAvailableTypes()
     {
         return $this->types;
-    }
-
-    /**
-     * @param string $needleType
-     *
-     * @return string|null
-     */
-    public function getClassNameByType($needleType)
-    {
-        $type = $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($needleType) {
-            return $type->getType() == $needleType or $this->isCorrupt($type->getClass());
-        })->first();
-
-        if ($type) {
-            return $type->getClass();
-        }
-    }
-
-    /**
-     * @param string $needleClass
-     *
-     * @return string|null
-     */
-    public function getTypeByClassName($needleClass)
-    {
-        $type = $this->types->filter(function (\KodiCMS\Dashboard\Contracts\WidgetType $type) use ($needleClass) {
-            return $type->getClass() == $needleClass or $this->isCorrupt($type->getClass());
-        })->first();
-
-        if ($type) {
-            return $type->getType();
-        }
     }
 
     /**
