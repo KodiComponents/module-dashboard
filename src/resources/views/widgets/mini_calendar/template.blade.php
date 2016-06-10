@@ -1,12 +1,6 @@
 <div class="panel dashboard-widget panel-info panel-body-colorful panel-dark" data-id="{{ $widget->getId() }}">
-	<button type="button" class="close" v-on:click="remove('{{ $widget->getId() }}')">
-		{!! UI::icon('times') !!}
-	</button>
-
-	<button type="button" class="settings" v-on:click="showSettings('{{ $widget->getId() }}')">
-		{!! UI::icon('cog') !!}
-	</button>
-
+	<button type="button" class="close" v-if="settings" v-on:click="remove('{{ $widget->getId() }}')" data-icon="times"></button>
+	<button type="button" class="settings" v-if="settings" v-on:click="showSettings('{{ $widget->getId() }}')" data-icon="cog"></button>
 	<div class="panel-body text-lg handle">
 		<i class="fa fa-calendar fa-2x"></i>&nbsp;&nbsp;<span class="time-container"></span>
 	</div>

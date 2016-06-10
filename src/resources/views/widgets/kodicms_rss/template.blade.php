@@ -1,7 +1,7 @@
 <div class="panel dashboard-widget rss-feed-widget" data-id="{{ $widget->getId() }}">
 	<div class="panel-heading">
 		<span class="panel-title" data-icon="rss">@lang('dashboard::types.kodicms_rss.title')</span>
-		<div class="panel-heading-controls">
+		<div class="panel-heading-controls" v-if="settings">
 			<button type="button" class="btn btn-xs btn-default" v-on:click="remove('{{ $widget->getId() }}')"  data-icon="times"></button>
 		</div>
 	</div>

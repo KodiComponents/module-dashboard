@@ -10,16 +10,22 @@ var Dashboard = {
                     enabled: true,
                     start: function (e, ui, $widget) {
                         var $cont = $widget.find('.dashboard-widget');
-                        $cont.trigger('resize_start', [this, ui, $cont.width(), $cont.height()])
+                        $cont.trigger('resize_start', [this])
                             .fadeTo(100, .5);
                     },
                     stop: function (e, ui, $widget) {
-                        Dashboard.widgets.save_order();
                         var $cont = $widget.find('.dashboard-widget');
 
-                        $cont
-                            .fadeTo(100, 1)
-                            .trigger('resize_stop', [this, ui, $cont.width(), $cont.height()]);
+                        if(
+                            (this.resize_initial_sizex !== this.resize_last_sizex)
+                            ||
+                            (this.resize_initial_sizey !== this.resize_last_sizey)
+                        ) {
+                            Dashboard.widgets.save_order();
+                            $cont.trigger('resize_stop', [this])
+                        }
+
+                        $cont.fadeTo(100, 1);
                     }
                 },
                 draggable: {
@@ -67,10 +73,11 @@ var Dashboard = {
 
             var $cont = $widget.find('.dashboard-widget');
             $cont.trigger('widget_init', [$cont.width(), $cont.height()]);
+            CMS.ui.init(['icon', 'switcher']);
         },
         add: function (html, id, size) {
             try {
-                this.place(html, id, size)
+                this.place(html, id, size);
             } catch (e) {
                 return;
             }
@@ -104,16 +111,10 @@ CMS.controllers.add('dashboard.get.index', function () {
         template: '#popupWidgetList',
         props: ['widgets'],
         ready: function () {
-            CMS.ui.init();
-
+            var self = this;
+            CMS.ui.init(['icon', 'switcher']);
             $('input[name="draggable"]').on('change', $.proxy(function (e) {
-                if ($(e.target).is(':checked')) {
-                    Dashboard.widgets.gridster.enable().enable_resize();
-                    $('.remove_widget').show();
-                } else {
-                    Dashboard.widgets.gridster.disable().disable_resize();
-                    $('.remove_widget').hide();
-                }
+                self.$dispatch('settings', $(e.target).is(':checked'));
             }, this)).change();
         },
         data: {
@@ -157,7 +158,6 @@ CMS.controllers.add('dashboard.get.index', function () {
                     setTimeout(function () {
                         Dashboard.widgets.add($(template), widget.id, widget.size);
                         self.widgets.splice(i, 1);
-                        CMS.ui.init('icon');
                     });
                 });
             }
@@ -170,14 +170,27 @@ CMS.controllers.add('dashboard.get.index', function () {
             Dashboard.widgets.init();
             this.getList();
 
+            CMS.ui.init(['icon', 'switcher']);
             var self = this;
+            this.$dispatch('settings', false);
 
             $('#widgetSettings').on('hidden.bs.modal', function () {
                 self.widget = null;
             });
 
             return {
-                widget: this.widget
+                widget: this.widget,
+                settings: this.settings
+            }
+        },
+        events: {
+            settings: function (status) {
+                this.settings = status;
+                if(status) {
+                    Dashboard.widgets.gridster.enable().enable_resize();
+                } else {
+                    Dashboard.widgets.gridster.disable().disable_resize();
+                }
             }
         },
         methods: {
@@ -194,7 +207,6 @@ CMS.controllers.add('dashboard.get.index', function () {
 
                     $('input[name="draggable"]').change();
                     CMS.loader.hide();
-                    CMS.ui.init('icon');
                 });
             },
             remove: function(id) {

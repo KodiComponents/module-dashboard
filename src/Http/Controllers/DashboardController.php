@@ -11,5 +11,6 @@ class DashboardController extends BackendController
     {
         Meta::loadPackage('gridster');
         $this->setContent('dashboard');
+        $this->breadcrumbs = false;
     }
 }

@@ -10,7 +10,7 @@ class MiniCalendar extends WidgetDashboardAbstract
     protected $size = [
         'x'        => 3,
         'y'        => 1,
-        'max_size' => [5, 1],
+        'max_size' => [5, 2],
         'min_size' => [3, 1],
     ];
 
