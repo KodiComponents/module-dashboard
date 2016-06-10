@@ -33,7 +33,7 @@
 					{!! Form::close() !!}
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" v-on:click="saveSettings(widget)">
+					<button type="button" class="btn btn-default" v-on:click="saveSettings()">
 						@lang('dashboard::core.buttons.save')
 					</button>
 					<button type="button" class="btn btn-danger" data-dismiss="modal">

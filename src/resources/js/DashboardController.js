@@ -146,8 +146,7 @@ CMS.controllers.add('dashboard.get.index', function () {
                         return;
                     }
 
-                    var widget = response.content.widget,
-                        template = response.content.template;
+                    var widget = response.content.widget;
 
                     if (typeof widget.packages == 'object') {
                         for (i in widget.packages) {
@@ -156,9 +155,9 @@ CMS.controllers.add('dashboard.get.index', function () {
                     }
 
                     setTimeout(function () {
-                        Dashboard.widgets.add($(template), widget.id, widget.size);
+                        self.$dispatch('place', response.content);
                         self.widgets.splice(i, 1);
-                    });
+                    }, 100);
                 });
             }
         }
@@ -166,22 +165,22 @@ CMS.controllers.add('dashboard.get.index', function () {
 
     new Vue({
         el: '#dashboard-widgets',
-        data: function () {
+        data: {
+            widget: null,
+            settings: false
+        },
+        created: function() {
+            var self = this;
+
             Dashboard.widgets.init();
-            this.getList();
+            self.getList();
 
             CMS.ui.init(['icon', 'switcher']);
-            var self = this;
-            this.$dispatch('settings', false);
+            self.$dispatch('settings', false);
 
             $('#widgetSettings').on('hidden.bs.modal', function () {
                 self.widget = null;
             });
-
-            return {
-                widget: this.widget,
-                settings: this.settings
-            }
         },
         events: {
             settings: function (status) {
@@ -191,6 +190,10 @@ CMS.controllers.add('dashboard.get.index', function () {
                 } else {
                     Dashboard.widgets.gridster.disable().disable_resize();
                 }
+            },
+            place: function(widget) {
+                Dashboard.widgets.add($(widget.template), widget.widget.id, widget.widget.size);
+                this.$compile(this.$el);
             }
         },
         methods: {
@@ -216,12 +219,12 @@ CMS.controllers.add('dashboard.get.index', function () {
                 var self = this;
                 CMS.loader.show('.gridster');
                 Api.get('/api.dashboard.widget', {id: id}, function (response) {
-                    self.widget = response.content;
                     CMS.loader.hide();
                     $('#widgetSettings').modal('show');
+                    self.widget = response.content;
                 });
             },
-            saveSettings: function(widget) {
+            saveSettings: function() {
                 var self = this;
                 Api.post('/api.dashboard.widget', $('#widgetSettings form'), function (response) {
                     self.widget = response.content;
