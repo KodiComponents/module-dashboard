@@ -2,7 +2,7 @@
 	<div class="panel-heading">
 		<span class="panel-title" data-icon="rss">@lang('dashboard::types.kodicms_rss.title')</span>
 		<div class="panel-heading-controls">
-			<button type="button" class="btn btn-xs btn-default remove_widget">{!! UI::icon('times') !!}</button>
+			<button type="button" class="btn btn-xs btn-default" v-on:click="remove('{{ $widget->getId() }}')"  data-icon="times"></button>
 		</div>
 	</div>
 

@@ -1,5 +1,5 @@
 <div class="panel dashboard-widget" data-id="{{ $widget->getId() }}">
-	<button type="button" class="close remove_widget">{!! UI::icon('times') !!}</button>
+	<button type="button" class="close" v-on:click="remove('{{ $widget->getId() }}')" data-icon="times"></button>
 	<div class="panel-body text-center handle">
 		{!! Form::button(trans('dashboard::types.cache_button.clear_cache'), [
 			'data-icon' => 'trash-o fa-lg',

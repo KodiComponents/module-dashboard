@@ -176,6 +176,7 @@ CMS.controllers.add('dashboard.get.index', function () {
         },
         methods: {
             getList: function() {
+                CMS.loader.show('.gridster');
                 Dashboard.widgets.empty();
                 this.$http.get(Api.parseUrl('/api.dashboard.widget.list')).then(function (response) {
                     for(var i in response.data.content) {
@@ -184,7 +185,10 @@ CMS.controllers.add('dashboard.get.index', function () {
                     }
 
                     this.$compile(this.$el);
+
+                    $('input[name="draggable"]').change();
                     CMS.loader.hide();
+                    CMS.ui.init('icon');
                 });
             },
             remove: function(id) {

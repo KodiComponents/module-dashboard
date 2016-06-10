@@ -2,7 +2,7 @@
 	<div class="panel-heading">
 		<span class="panel-title" data-icon="bar-chart">@lang('cms::profiler.title')</span>
 		<div class="panel-heading-controls">
-			<button type="button" class="btn btn-default btn-xs remove_widget">{!! UI::icon('times') !!}</button>
+			<button type="button" class="btn btn-default btn-xs" v-on:click="remove('{{ $widget->getId() }}')" data-icon="times"></button>
 		</div>
 	</div>
 	<div class="stat-panel">
