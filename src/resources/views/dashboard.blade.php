@@ -75,7 +75,11 @@
 						<div class="col-sm-6" v-for="widget in widgets">
 							<div class="panel">
 								<div class="panel-body padding-sm">
-									<button class="btn btn-success btn-xs pull-right" data-type="@{{ widget.type }}" v-on:click="install($index, widget)">
+									<button
+											class="btn btn-success btn-xs pull-right"
+											v-on:click="install($index, widget)"
+											:disabled="widget.install"
+									>
 										@lang('dashboard::core.buttons.place_widget')
 									</button>
 

@@ -4,7 +4,7 @@ var Dashboard = {
         init: function () {
             this.gridster = $(".gridster ul").gridster({
                 widget_base_dimensions: [150, 100],
-                widget_margins: [5, 5],
+                widget_margins: [10, 10],
                 autogrow_cols: true,
                 resize: {
                     enabled: true,
@@ -139,7 +139,12 @@ CMS.controllers.add('dashboard.get.index', function () {
             },
             install: function (i, widget) {
                 var self = this;
+                event.target.disabled = true;
                 Api.put('/api.dashboard.widget', {widget_type: widget.type}, function (response) {
+                    if (response.code != 200) {
+                        return;
+                    }
+
                     var widget = response.content.widget,
                         template = response.content.template;
 
@@ -152,6 +157,7 @@ CMS.controllers.add('dashboard.get.index', function () {
                     setTimeout(function () {
                         Dashboard.widgets.add($(template), widget.id, widget.size);
                         self.widgets.splice(i, 1);
+                        CMS.ui.init('icon');
                     });
                 });
             }
